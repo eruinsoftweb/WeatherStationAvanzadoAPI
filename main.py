@@ -20,13 +20,13 @@ def connectToMySql():
 
     return mydb
 
-def saveWeatherData(temperature, altitud, pressure, date):
+def saveWeatherData(date, temperature, altitud, pressure):
     result = False
     mydb = connectToMySql()
     try:
         mycursor = mydb.cursor()
-        sql = "INSERT INTO `indoorweatherdataesp32`(`Date`, `Temperature`,`Pressure`,`Altitude`) VALUES (%s,%s,%s,%s)"
-        val = (date, temperature, pressure, altitud)
+        sql = "INSERT INTO `indoorweatherdataesp32`(`Date`, `Temperature`, `Altitude`, `Pressure`) VALUES (%s,%s,%s,%s)"
+        val = (date, temperature, altitud, pressure)
         mycursor.execute(sql, val)
         mydb.commit()
         print(mycursor.rowcount, "record inserted.")
@@ -164,13 +164,13 @@ def postWeatherData():
         pressure = request.args.get('Pres')
         date = request.args.get('Date')
         time = request.args.get('Time')
-        print("New Weather Data. T:" + temperature + " H:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time)
+        print("New Weather Data. T:" + temperature + " A:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time)
         datetime = date + " " + time
         if float(temperature) > -14 and float(temperature) < 46 and float(altitude) >4 and float(altitude) < 71:
             insertResult = saveWeatherData(temperature, altitude, pressure, datetime)
             print("postWeatherData result: " + str(insertResult))
         else:
-            logging.info("Weather data values out of range (esp temperature sensor error). Weather Data received:  T:" + temperature + " H:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time )
+            logging.info("Weather data values out of range (esp temperature sensor error). Weather Data received:  T:" + temperature + " A:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time )
         # return redirect('/')
     return 'ok'
 
