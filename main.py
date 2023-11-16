@@ -167,29 +167,21 @@ def logout():
 # ejemplo de URL: http://127.0.0.1:5000/postWeatherData?Temp=26.3&Alt=23.7&Pres=3455.8&Date=2021-05-05&Time=12:39
 @app.route('/postWeatherData', methods=['GET', 'POST'])
 def postWeatherData():
-    if request.method == 'POST':
-        temperature = request.form.get('Temp')  # Cambiado a 'form' en lugar de 'args' para POST
-        altitude = request.form.get('Alt')
-        pressure = request.form.get('Pres')
-        date = request.form.get('Date')
-        time = request.form.get('Time')
-        print("New Weather Data. T:" + temperature + " A:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time)
-        datetime_str = date + " " + time
-        try:
-            datetime_obj = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
-        except ValueError as e:
-            logging.error("Error parsing datetime: " + str(e))
-            return jsonify({'status': 'error', 'message': 'Invalid datetime format'})
-
-        if -14 < float(temperature) < 46 and 4 < float(altitude) < 71:
-            insert_result = saveWeatherData(datetime_obj, float(temperature), float(altitude), float(pressure))
-            print("postWeatherData result: " + str(insert_result))
-            return jsonify({'status': 'success'})
+    if request.method == 'GET':
+        temperature = request.args.get('Temp')
+        altitude = request.args.get('Alt')
+        pressure = request.args.get('Pres')
+        date = request.args.get('Date')
+        time = request.args.get('Time')
+        print("New Weather Data. T:" + temperature + " H:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time)
+        datetime = date + " " + time
+        if float(temperature) > -14 and float(temperature) < 46 and float(altitude) >4 and float(altitude) < 71:
+            insertResult = saveWeatherData(temperature, altitude, pressure, datetime)
+            print("postWeatherData result: " + str(insertResult))
         else:
-            logging.info("Weather data values out of range (esp temperature sensor error). Weather Data received:  T:" + temperature + " A:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time)
-            return jsonify({'status': 'error', 'message': 'Weather data values out of range'})
-
-    return jsonify({'status': 'error', 'message': 'Invalid request method'})
+            logging.info("Weather data values out of range (esp temperature sensor error). Weather Data received:  T:" + temperature + " H:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time )
+        # return redirect('/')
+    return 'ok'
 
 if __name__ == '__main__':
     app.env = "debug"
