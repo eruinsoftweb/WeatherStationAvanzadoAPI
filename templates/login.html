@@ -1,44 +1,147 @@
-<head>
-    <link rel="stylesheet" href="/static/login_style.css" type="text/css">
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-        }
-        .bg {
-              background-image: url("static/login_wallpaper4.jpg");
-              height: 100%;
-              background-position: center;
-              background-repeat: no-repeat;
-              background-size: cover;
-        }
-    </style>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in & Sign up Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
+  </head>
+  <body>
+    <main>
+      <div class="box">
+        <div class="inner-box">
+          <div class="forms-wrap">
+            <form action="/login" method="POST" class="sign-in-form">
+              <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="easyclass" />
+                <h4>Estación Meteorológica</h4>
+              </div>
 
-</head>
-<body>
-    <div class="bg">
-        <form action="/login" method="POST">
-        <div class="login">
-        <div class="login-screen">
-        <div class="app-title">
-        <h1>Iniciar sesión</h1>
-        </div>
-        <div class="login-form">
-        <div class="control-group">
-                        <input type="text" class="login-field" value="" placeholder="Nombre de usuario" name="username">
-        <label class="login-field-icon fui-user" for="login-name"></label></div>
-        <div class="control-group">
-                        <input type="password" class="login-field" value="" placeholder="password" name="password">
-        <label class="login-field-icon fui-lock" for="login-pass"></label></div>
-        <input type="submit" value="Entrar" class="btn btn-primary btn-large btn-block">
-        {% for message in get_flashed_messages() %}
-            <div class="alert alert-warning">
-               <h4 style="color: rgb(226, 232, 236);"> {{ message }} </h4>
+              <div class="heading">
+                <h2>Bienvenido</h2>
+                <h6>Todavía no estas registrado?</h6>
+                <a href="#" class="toggle">Regístrate</a>
+              </div>
+
+              <div class="actual-form">
+                <div class="input-wrap">
+                  <input
+                    type="text"
+                    minlength="4"
+                    class="input-field"
+                    autocomplete="off"
+                    required
+                    name="username"
+                  />
+                  <label>Usuario</label>
+                </div>
+
+                <div class="input-wrap">
+                  <input
+                    type="password"
+                    minlength="4"
+                    class="input-field"
+                    autocomplete="off"
+                    required
+                    name="password"
+                  />
+                  <label>Contraseña</label>
+                </div>
+
+                <input type="submit" value="Iniciar sesión" class="sign-btn" />
+
+                <p class="text">
+                    ¿Olvidó su contraseña o sus datos de inicio de sesión?
+                  <a href="#">Obtén ayuda</a> para iniciar sesión
+                </p>
+              </div>
+            </form>
+
+            <form action="#" class="sign-up-form">
+              <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="easyclass" />
+                <h4>easyclass</h4>
+              </div>
+
+              <div class="heading">
+                <h2>Get Started</h2>
+                <h6>Already have an account?</h6>
+                <a href="#" class="toggle">Sign in</a>
+              </div>
+
+              <div class="actual-form">
+                <div class="input-wrap">
+                  <input
+                    type="text"
+                    minlength="4"
+                    class="input-field"
+                    autocomplete="off"
+                    required
+                  />
+                  <label>Username</label>
+                </div>
+
+                <div class="input-wrap">
+                  <input
+                    type="email"
+                    class="input-field"
+                    autocomplete="off"
+                    required
+                  />
+                  <label>Email</label>
+                </div>
+
+                <div class="input-wrap">
+                  <input
+                    type="password"
+                    minlength="4"
+                    class="input-field"
+                    autocomplete="off"
+                    required
+                  />
+                  <label>Password</label>
+                </div>
+
+                <input type="submit" value="Sign Up" class="sign-btn" />
+
+                <p class="text">
+                  By signing up, I agree to the
+                  <a href="#">Terms of Services</a> and
+                  <a href="#">Privacy Policy</a>
+                </p>
+              </div>
+            </form>
+          </div>
+
+          <div class="carousel">
+            <div class="images-wrapper">
+              <img src="{{ url_for('static', filename='images/image1.png') }}" class="image img-1 show" alt="" />
+              <img src="{{ url_for('static', filename='images/image2.png') }}" class="image img-2" alt="" />
+              <img src="{{ url_for('static', filename='images/image3.png') }}" class="image img-3" alt="" />
             </div>
-            {% endfor %}
+
+            <div class="text-slider">
+              <div class="text-wrap">
+                <div class="text-group">
+                  <h2>Invernaderos conectados : IoT</h2>
+                  <h2>Monitoreo de Cultivos</h2>
+                  <h2>Sensores Basados en IoT</h2>
+                </div>
+              </div>
+
+              <div class="bullets">
+                <span class="active" data-value="1"></span>
+                <span data-value="2"></span>
+                <span data-value="3"></span>
+              </div>
+            </div>
+          </div>
         </div>
-        </div>
-        </div>
-        </form>
-    </div>
-</body>
+      </div>
+    </main>
+
+    <!-- Javascript file -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

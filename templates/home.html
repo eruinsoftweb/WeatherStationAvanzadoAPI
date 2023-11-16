@@ -1,151 +1,257 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <style>
-        .center {
-            margin: auto;
-            width: 60%;
-            border: 0px solid #73AD21;
-            padding: 10px;
-        }
+    {% if title %}
+        <title>{{ title }} - INICIO</title>
+    {% else %}
+        <title>WeatherStation</title>
+    {% endif %}
 
-        .top_right {
-            position: absolute;
-            top: 10px;
-            right: 60px;
-        }
-
-        .text_right {
-            float: right;
-        }
-
-        .text_left {
-            float: left;
-        }
-
-        .card {
-            margin-bottom: 10px;
-            height: 40%;
-        }
-
-        .card-header {
-            text-align: center;
-        }
-
-        .card-body {
-            text-align: center;
-        }
-
-    </style>
     <meta charset="UTF-8">
-    <title>Realtime Weather Station</title>
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="http://netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-          crossorigin="anonymous">
-    <link rel='shortcut icon' type='image/x-icon' href='/favicon.ico'/>
-    <link rel="stylesheet" href="/static/trafficLights.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
+  <style>
+  html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+  </style>
 </head>
-<body>
+<body class="w3-light-grey">
 
-<div class="top_right">
-    <form action="/logout" method="POST">
-        <input type="submit" value="Logout" class="btn btn-primary" style="width: 95px;height: 40px;">
-    </form>
-</div>
+<!-- Top container -->
+<!-- Top container -->
+<!-- Top container -->
+<div class="w3-bar w3-top w3-white w3-large" style="z-index:4">
+    <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>Menu</button>
+    <!-- Comentario: Quitamos el div que contenía "ARMS" -->
+     </div>
+  
+  
+
+<!-- Sidebar/menu -->
+<nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
+    <div class="w3-container w3-row">
+        <div class="w3-col s4">
+          <img src="/static/images/eruinsoftweb.jpg" class="w3-circle w3-margin-right" style="width:46px">
+        </div>
+        <div class="w3-col s8 w3-bar">
+          <span>WeatherStation</span><br>
+          <a href="#" class="w3-bar-item w3-button"><i class="fa fa-envelope"></i></a>
+          <a href="#" class="w3-bar-item w3-button"><i class="fa fa-user"></i></a>
+          <a href="#" class="w3-bar-item w3-button"><i class="fa fa-cog"></i></a>
+        </div>
+      </div>
+  <hr>
+  <div class="w3-container">
+    <h5>Dashboard</h5>
+  </div>
+  <div class="w3-bar-block">
+    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-white w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
+    <a href="overview" class="w3-bar-item w3-button w3-padding w3-blue"><i class="fa fa-users fa-fw"></i>  Descripción General</a>
+  
+    {% for device in devices %}
+    <a href="{{ device.Dashboard }}" class="w3-bar-item w3-button w3-padding"> <img src="/static/images/bio-sensor.svg"> {{ device.deviceID }}</a>
+    {% endfor %}
+  
+    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-eye fa-fw"></i>  Controles del dispositivo de campo</a>
+    <a href="apisettings" class="w3-bar-item w3-button w3-padding"><i class="fa fa-users fa-fw"></i>  Configuración de la API</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bullseye fa-fw"></i>  Administrador de Dispositivos</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-cog fa-fw"></i>  Configuración de perfil</a><br><br>
+  
+    <!-- Convertimos el botón de Logout en un enlace -->
+    <a href="#" class="w3-bar-item w3-button w3-padding" onclick="logout()"><i class="fa fa-sign-out fa-fw"></i> Cerrar sesión</a>
+
+  </div>
+</nav>
 
 
-<div class="center">
-    <div id="accordion">
-        <div class="card">
-            <div class="card-header" id="headingOne">
-                <h5 class="mb-0">
-                    <button style="width:100%;" class="btn btn-link" data-toggle="collapse"
-                            data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                        <h4>
-                            <div class="text_left">Weather Station: {{ lastDataTime }} </div>
-                            <div class="text_right"> &#11191; </div>
-                        </h4>
-                    </button>
-                </h5>
+<!-- Overlay effect when opening sidebar on small screens -->
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:300px;margin-top:43px;">
+
+  <!-- Header -->
+  <header class="w3-container" style="padding-top:22px">
+    <h5><b><i class="fa fa-dashboard"></i> My Dashboard</b></h5><br>
+  </header>
+
+  <div class="w3-row-padding w3-margin-bottom">
+    <div class="w3-quarter">
+      <div class="w3-container w3-white w3-hover-shadow w3-border-red w3-bottombar w3-padding-16">
+        <div class="w3-left"><img src="/static/images/temperature.svg"></div>
+        <div class="w3-right">
+          <h3>{{ lastTemperature }} °C</h3>
+        </div>
+        <div class="w3-clear"></div>
+        <h4>Temperatura</h4>
+      </div>
+    </div>
+    <div class="w3-quarter">
+      <div class="w3-container w3-white w3-hover-shadow w3-border-blue w3-bottombar w3-padding-16">
+        <div class="w3-left"><img src="/static/images/grass.svg"></div>
+        <div class="w3-right">
+          <h3>{{ lastAltitude }}</h3>
+        </div>
+        <div class="w3-clear"></div>
+        <h4>Altitud</h4>
+      </div>
+    </div>
+    <div class="w3-quarter">
+      <div class="w3-container w3-white w3-hover-shadow w3-border-teal w3-bottombar w3-padding-16">
+        <div class="w3-left"><img src="/static/images/humidity.svg"></div>
+        <div class="w3-right">
+          <h3>{{ lastPressure }}</h3>
+        </div>
+        <div class="w3-clear"></div>
+        <h4>Presión</h4>
+      </div>
+    </div>
+    <div class="w3-quarter">
+      <!-- Aquí se encuentra la caja del semáforo -->
+      <div class="w3-container w3-white w3-hover-shadow w3-border-orange w3-bottombar w3-padding-16">
+        <h3>Estado del sistema</h3>
+        <div class="card bg-light mb-3" style="width: 16rem;">
+          <div class="card-header">
+            {% if systemOn %}
+            <h5>Sistema: ENCENDIDO</h5>
+            {% else %}
+            <h5>Sistema: APAGADO</h5>
+            {% endif %}
+          </div>
+          <div class="card-body">
+            <h5 class="card-title"></h5>
+            <div class="traffic-light">
+              {% if systemOn %}
+              <input type="radio" name="rag1" class="color1" value="1">
+              <input type="radio" name="rag1" class="color2" value="2">
+              <input type="radio" name="rag1" class="color3checked" value="3">
+              {% else %}
+              <input type="radio" name="rag1" class="color1checked" value="1">
+              <input type="radio" name="rag1" class="color2" value="2">
+              <input type="radio" name="rag1" class="color3" value="3">
+              {% endif %}
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+  <div class="w3-panel w3-padding-large">
 
-                <div class="card-body d-flex flex-wrap justify-content-between">
-                    <div class="card bg-light mb-3" style="width: 16rem;">
-                        <div class="card-header">
-                            {% if systemOn %}
-                            <h5>System: ON</h5>
-                            {% else %}
-                            <h5>System: OFF</h5>
-                            {% endif %}
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title"></h5>
-                            <div class="traffic-light">
-                                {% if systemOn %}
-                                <input type="radio" name="rag1" class="color1" value="1">
-                                <input type="radio" name="rag1" class="color2" value="2">
-                                <input type="radio" name="rag1" class="color3checked" value="3">
-                                {% else %}
-                                <input type="radio" name="rag1" class="color1checked" value="1">
-                                <input type="radio" name="rag1" class="color2" value="2">
-                                <input type="radio" name="rag1" class="color3" value="3">
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card text-white bg-primary mb-3" style="width: 12rem;">
-                        <div class="card-header">
-                            <h5>Temperature:</h5>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title"></h5>
-                            <h3 class="card-text">{{ lastTemperature }} °C</h3>
-                        </div>
-                    </div>
-
-                    <div class="card text-white bg-primary mb-3" style="width: 12rem;">
-                        <div class="card-header">
-                            <h5>Altitude:</h5>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title"></h5>
-                            <h3 class="card-text">{{ lastAltitude }} meters</h3>
-                        </div>
-                    </div>
-
-                    <div class="card text-white bg-primary mb-3" style="width: 12rem;">
-                        <div class="card-header">
-                            <h5>Pressure:</h5>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title"></h5>
-                            <h3 class="card-text">{{ lastPressure }} hPa</h3>
-                        </div>
-                    </div>
-
-                </div>
-
+    <!-- Gráfica de Temperatura -->
+    <div class="w3-row">
+        <div class="w3-container w3-white w3-card w3-hover-shadow w3-section w3-round-large" style="max-width: 200px;">
+            <h3>Temperatura</h3>
+            <div class="ct-chart ct-series-a ct-major-sixth">
+                <!-- Aquí deberías incluir el gráfico de temperatura -->
+                {{ temperaturePlot }}
             </div>
         </div>
     </div>
-</div>
 
-<div class="center">
-    {{ temperaturePlot }}
-</div>
+    <!-- Gráfica de Altitud -->
+    <div class="w3-row">
+        <div class="w3-container w3-white w3-card w3-hover-shadow w3-section w3-round-large" style="max-width: 200px;">
+            <h3>Altitud</h3>
+            <div class="ct-chart ct-series-a ct-major-sixth">
+                <!-- Aquí deberías incluir el gráfico de altitud -->
+                {{ altitudePlot }}
+            </div>
+        </div>
+    </div>
 
-<div class="center">
-    {{ altitudePlot }}
-</div>
+    <!-- Gráfica de Presión -->
+    <div class="w3-row">
+        <div class="w3-container w3-white w3-card w3-hover-shadow w3-section w3-round-large" style="max-width: 200px;">
+            <h3>Presión</h3>
+            <div class="ct2-chart ct-series-b ct-major-sixth">
+                <!-- Aquí deberías incluir el gráfico de presión -->
+                {{ pressurePlot }}
+            </div>
+        </div>
+    </div>
 
-<div class="center">
-    {{ pressurePlot }}
 </div>
+<div class="w3-panel w3-padding-16">
+    <div class="w3-row-padding w3-white w3-border-green w3-margin-left w3-leftbar" style="margin:0 -16px">
+        <div class="w3-third w3-padding-16">
+            <h5>Campo Descripción</h5><br>
+            <img src="/static/images/image4.jpg" style="width:100%" alt="">
+        </div>
+        <div class="w3-twothird">
+            <h5>Estación Meteorológica</h5>
+        </div>
+    </div>
+</div>
+<br>
+<div class="w3-container w3-dark-grey w3-padding-32">
+    <div class="w3-row">
+        <div class="w3-container w3-third">
+            <h5 class="w3-bottombar w3-border-green">Colaboradores</h5>
+            <p style="color: white;"> <!-- Cambia el color del texto a blanco -->
+                Eruin Softweb Solutions
+            </p>
+            <p style="color: white;"> <!-- Cambia el color del texto a blanco -->
+              JOse Orlando Escalante
+            </p>
+        </div>
+        <div class="w3-container w3-third">
+            <h5 class="w3-bottombar w3-border-red">Guías</h5>
+            <p style="color: white;"> <!-- Cambia el color del texto a blanco -->
+              Corporación Universitaria Remington
+            </p>
+        </div>
+        <div class="w3-container w3-third">
+            <h5 class="w3-bottombar w3-border-orange">Referencias</h5>
+            <p style="color: white;"> <!-- Cambia el color del texto a blanco -->
+              Diego Fernando Marin
+            </p>
+            
+        </div>
+    </div>
+</div>
+<script>
+// Get the Sidebar
+var mySidebar = document.getElementById("mySidebar");
+
+// Get the DIV with overlay effect
+var overlayBg = document.getElementById("myOverlay");
+
+// Toggle between showing and hiding the sidebar, and add overlay effect
+function w3_open() {
+  if (mySidebar.style.display === 'block') {
+    mySidebar.style.display = 'none';
+    overlayBg.style.display = "none";
+  } else {
+    mySidebar.style.display = 'block';
+    overlayBg.style.display = "block";
+  }
+}
+
+// Close the sidebar with the close button
+function w3_close() {
+  mySidebar.style.display = "none";
+  overlayBg.style.display = "none";
+}
+
+function logout() {
+  console.log('Función de logout llamada');
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/logout';
+
+  document.body.appendChild(form);
+  form.submit();
+}
+</script>
+
+<script src="/static/JS/main.js"> </script>
 
 </body>
 </html>

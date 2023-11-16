@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, Markup, send_from_directory, session, flash
+from flask import Flask, request, render_template, send_from_directory, session, flash, redirect, url_for, jsonify  # Añadir jsonify
+from markupsafe import Markup  # Agrega esta línea
 import os
 import mysql.connector
 import plotly
@@ -20,13 +21,13 @@ def connectToMySql():
 
     return mydb
 
-def saveWeatherData(temperature, altitud, pressure, date):
+def saveWeatherData(date, temperature, altitud, pressure):
     result = False
     mydb = connectToMySql()
     try:
         mycursor = mydb.cursor()
-        sql = "INSERT INTO `indoorweatherdataesp32`(`Date`, `Temperature`,`Pressure`,`Altitude`) VALUES (%s,%s,%s,%s)"
-        val = (date, temperature, pressure, altitud)
+        sql = "INSERT INTO `indoorweatherdataesp32`(`Date`, `Temperature`, `Altitude`, `Pressure`) VALUES (%s,%s,%s,%s)"
+        val = (date, temperature, altitud, pressure)
         mycursor.execute(sql, val)
         mydb.commit()
         print(mycursor.rowcount, "record inserted.")
@@ -81,13 +82,13 @@ def getSpecificData(dataToSelect):
 def createPlot(datas, dataType):
     if dataType == 'Temperature':
         plotColor = '#ff9900'
-        plotTitle = 'Temperatures'
+        plotTitle = 'Temperatura'
     elif dataType == 'Altitude':
         plotColor = '#029400'
-        plotTitle = 'Altitude'
+        plotTitle = 'Altitud'
     else:
         plotColor = '#70bfff'
-        plotTitle ='Pressure'
+        plotTitle ='Presión'
 
     dataDictionary = {
         "X": [],
@@ -98,7 +99,7 @@ def createPlot(datas, dataType):
         dataDictionary["Y"].append(x[1])
     plot = plotly.offline.plot({
         "data": [Scatter(x=dataDictionary["X"], y=dataDictionary["Y"], line=dict(color=plotColor, width=2))],
-        "layout": Layout(title=plotTitle, height=1000, margin=dict(
+        "layout": Layout(title=plotTitle,width=1200, height=550, margin=dict(
             l=50,
             r=50,
             b=100,
@@ -115,6 +116,10 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/')
+def index():
+    return render_template('index.html')    
+
+@app.route('/home')
 def homePage():
     if not session.get('logged_in'):
         return render_template('login.html')
@@ -142,37 +147,49 @@ def homePage():
 
         return render_template("home.html", lastDataTime=lastDataTime, lastTemperature=lastTemperature, lastAltitude=lastAltitude, lastPressure=lastPressure, temperaturePlot=temperaturesPlotHtml,altitudePlot=altitudePlotHtml, pressurePlot=pressurePlotHtml, systemOn=systemOn)
 
-@app.route('/login', methods=['POST'])
-def do_admin_login():
-    if request.form['password'] == 'esp8266' and request.form['username'] == 'admin':
-        session['logged_in'] = True
-    else:
-        flash('Wrong username or password!')
-    return homePage()
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        if request.form['password'] == 'esp8266' and request.form['username'] == 'admin':
+            session['logged_in'] = True
+            return redirect(url_for('homePage'))
+        else:
+            flash('Wrong username or password!')
+    return render_template('login.html')
+
 
 @app.route("/logout", methods=['POST'])
 def logout():
     session['logged_in'] = False
-    return homePage()
+    return redirect(url_for('index'))
 
 #example query: /postWeatherData?Temp=26.3&Alt=23.7&Pres=3455.8&Date=2021-05-05&Time=12:39
+# ejemplo de URL: http://127.0.0.1:5000/postWeatherData?Temp=26.3&Alt=23.7&Pres=3455.8&Date=2021-05-05&Time=12:39
 @app.route('/postWeatherData', methods=['GET', 'POST'])
 def postWeatherData():
-    if request.method == 'GET':
-        temperature = request.args.get('Temp')
-        altitude = request.args.get('Alt')
-        pressure = request.args.get('Pres')
-        date = request.args.get('Date')
-        time = request.args.get('Time')
-        print("New Weather Data. T:" + temperature + " H:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time)
-        datetime = date + " " + time
-        if float(temperature) > -14 and float(temperature) < 46 and float(altitude) >4 and float(altitude) < 71:
-            insertResult = saveWeatherData(temperature, altitude, pressure, datetime)
-            print("postWeatherData result: " + str(insertResult))
+    if request.method == 'POST':
+        temperature = request.form.get('Temp')  # Cambiado a 'form' en lugar de 'args' para POST
+        altitude = request.form.get('Alt')
+        pressure = request.form.get('Pres')
+        date = request.form.get('Date')
+        time = request.form.get('Time')
+        print("New Weather Data. T:" + temperature + " A:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time)
+        datetime_str = date + " " + time
+        try:
+            datetime_obj = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+        except ValueError as e:
+            logging.error("Error parsing datetime: " + str(e))
+            return jsonify({'status': 'error', 'message': 'Invalid datetime format'})
+
+        if -14 < float(temperature) < 46 and 4 < float(altitude) < 71:
+            insert_result = saveWeatherData(datetime_obj, float(temperature), float(altitude), float(pressure))
+            print("postWeatherData result: " + str(insert_result))
+            return jsonify({'status': 'success'})
         else:
-            logging.info("Weather data values out of range (esp temperature sensor error). Weather Data received:  T:" + temperature + " H:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time )
-        # return redirect('/')
-    return 'ok'
+            logging.info("Weather data values out of range (esp temperature sensor error). Weather Data received:  T:" + temperature + " A:" + altitude + " P:" + pressure + " Date:" + date + " Time:" + time)
+            return jsonify({'status': 'error', 'message': 'Weather data values out of range'})
+
+    return jsonify({'status': 'error', 'message': 'Invalid request method'})
 
 if __name__ == '__main__':
     app.env = "debug"
